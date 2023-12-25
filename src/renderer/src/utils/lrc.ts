@@ -1,4 +1,4 @@
-import { type ILyric } from '../../../types'
+import { type ILyric, type ISong } from '../../../types'
 /**
  * Finds attempts to find lrc file in the same directory with the same path
  * Expects lrc files without metadata
@@ -11,7 +11,7 @@ export async function getLyrics(path: string): Promise<ILyric[]> {
   }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const file: string = await window.electronAPI.getLyric(path)
+  const file: string = await window.electron.getLyric(path)
   console.log(file)
 
   if (!file) {
@@ -72,4 +72,35 @@ export function nextLine(time: number, lrcs: ILyric[], n: number): string {
     return '--'
   }
 }
+/**
+ * Returns boolean promise of whether a lrc file can be found and written
+ * @param {ISong} song
+ * @returns {Promise<boolean>}
+ * */
+export async function lrcSearch(song: ISong): Promise<boolean> {
+  console.log(
+    `https://lrclib.net/api/get?track_name=${song.data.common.title}&artist_name=${
+      song.data.common.artist
+    }&album_name=${song.data.common.album}&duration=${Math.trunc(
+      song.data.format.duration
+    ).toString()}`
+  )
+  const res = await fetch(
+    `https://lrclib.net/api/get?track_name=${song.data.common.title}&artist_name=${
+      song.data.common.artist
+    }&album_name=${song.data.common.album}&duration=${Math.trunc(
+      song.data.format.duration
+    ).toString()}`
+  )
+  const text = await res.text()
 
+  if (res.ok) {
+    const obj = JSON.parse(text)
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    window.electron.writeLyric(song.path, obj.syncedLyrics)
+    return true
+  } else {
+    return false
+  }
+}

@@ -26,6 +26,19 @@
       e.type
     }
   }, 1000)
+
+  function handleMove(e): void {
+    if (!sound) return // video not loaded yet
+    if (e.type !== 'touchmove' && !(e.buttons && 1)) return // mouse not down
+
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX
+    const { left, right } = this.getBoundingClientRect()
+    sound.seek(($current.data.format.duration * (clientX - left)) / (right - left))
+
+    setTimeout(() => {
+      sound.volume(1)
+    }, 1500)
+  }
 </script>
 
 <div class="h-24 p-5 rounded-2xl space-x-5 w-full flex flex-row">
@@ -53,7 +66,8 @@
     </button>
     <button
       class="btn btn-ghost h-full btn-xs"
-      on:click={() => {
+      on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+      () => {
         queue.set(regen($queue, !$shuffled, getPlaying()))
       }}
     >
@@ -72,7 +86,19 @@
     <div class="flex space-x-5 flex-row">
       <div class="">{formatTime($Progress)}</div>
       <div class="grow">
-        <progress class="progress" value={$Progress} max={$current.data.format.duration} />
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions-->
+        <progress
+          class="progress"
+          on:mousemove={handleMove}
+          on:mousedown={() => {
+            sound.volume(0)
+          }}
+          on:mouseup={() => {
+            sound.volume(1)
+          }}
+          value={$Progress}
+          max={$current.data.format.duration}
+        />
       </div>
       <div class="right-5">{formatTime($current.data.format.duration)}</div>
     </div>

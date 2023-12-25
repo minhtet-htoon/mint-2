@@ -1,15 +1,23 @@
 <script lang="ts">
+  import arrows from '../assets/arrows-right.svg'
+  import shuffle from '../assets/arrows-shuffle.svg'
+  import pause from '../assets/player-pause.svg'
+  import play from '../assets/player-play.svg'
+  import skip from '../assets/player-skip-forward.svg'
+  import iconBack from '../assets/player-skip-back.svg'
   import {
-    IconArrowsRight,
-    IconArrowsShuffle2,
-    IconPlayerPause,
-    IconPlayerPlay,
-    IconPlayerSkipBack,
-    IconPlayerSkipForward
-  } from '@tabler/icons-svelte'
-  import { back, sound, end, Playing, commonButton, formatTime, getPlaying, Progress } from '../utils/player'
+    back,
+    sound,
+    end,
+    Playing,
+    commonButton,
+    formatTime,
+    getPlaying,
+    Progress
+  } from '../utils/player'
   import { current, queue, shuffled, regen } from '../utils/queue'
   import { onMount } from 'svelte'
+  import Icon from './Icon.svelte'
 
   onMount(() => {
     try {
@@ -26,11 +34,23 @@
       e.type
     }
   }, 1000)
+  function handleMove(e): void {
+    if (!sound) return // video not loaded yet
+    if (e.type !== 'touchmove' && !(e.buttons && 1)) return // mouse not down
+
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX
+    const { left, right } = this.getBoundingClientRect()
+    sound.seek(($current.data.format.duration * (clientX - left)) / (right - left))
+    setTimeout(() => {
+      sound.volume(1)
+    }, 1500)
+  }
 </script>
 
 <div class="flex space-x-5 pb-5">
-  <div class="w-[20%] flex-none h-full mask mask-squircle">
+  <div class="h-[30vh] aspect-square flex-none mask mask-squircle">
     <img
+      class="aspect-square h-full object-scale-down"
       src={URL.createObjectURL(
         new Blob([$current.data.common.picture[0].data], { type: 'image/jpeg' } /* (1) */)
       )}
@@ -44,37 +64,44 @@
     </div>
     <div class="flex-row h-[10%]">
       <button class="btn h-full btn-ghost btn-xs" on:click={back}>
-        <IconPlayerSkipBack class="h-full" />
+        <Icon path={iconBack} class="h-full w-6" />
       </button>
       <button class="btn h-full btn-ghost btn-xs" on:click={commonButton}>
         {#if $Playing}
-          <IconPlayerPause class="h-full"></IconPlayerPause>
+          <Icon path={pause} class="h-full w-6" />
         {:else}
-          <IconPlayerPlay class="h-full" />
+          <Icon path={play} class="h-full w-6" />
         {/if}
       </button>
       <button class="btn h-full btn-ghost btn-xs" on:click={end}>
-        <IconPlayerSkipForward class="h-full" />
+        <Icon path={skip} class="h-full w-6" />
       </button>
       <button
         class="btn btn-ghost h-full btn-xs"
-        on:click={
-        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         () => {
           queue.set(regen($queue, !$shuffled, getPlaying()))
         }}
       >
         {#if !$shuffled}
-          <IconArrowsRight class="h-full" />
+          <Icon path={arrows} class="h-full w-6" />
         {:else}
-          <IconArrowsShuffle2 class="h-full" />
+          <Icon path={shuffle} class="h-full w-6" />
         {/if}
       </button>
     </div>
     <div class="flex flex-row space-x-3 pb-5">
       <div class="">{formatTime($Progress)}</div>
       <div class="grow">
-        <progress class="progress" value={$Progress} max={$current.data.format.duration} />
+        <!--svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <progress
+          on:mousemove={handleMove}
+          on:mousedown={()=>{sound.volume(0)}}
+          on:mouseup={()=>{sound.volume(1)}}
+          class="progress"
+          value={$Progress}
+          max={$current.data.format.duration}
+        />
       </div>
       <div class="right-5">{formatTime($current.data.format.duration)}</div>
     </div>

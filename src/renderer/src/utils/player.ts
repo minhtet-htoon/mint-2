@@ -33,7 +33,7 @@ export async function play(): Promise<void> {
           new Blob(
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            [await window.electronAPI.getBuffer(localCurrent.path)],
+            [await window.electron.getBuffer(localCurrent.path)],
             { type: 'audio/mpeg' } /* (1) */
           )
         )
@@ -43,11 +43,11 @@ export async function play(): Promise<void> {
     })
   }
   if (!sound.playing()) {
+    sound.volume(1)
     sound.play()
   }
   Playing.set(true)
   console.log('Playing (Main Play Method)')
-  throw 'Stack Trace'
 }
 
 /**
@@ -60,7 +60,7 @@ export function commonButton(): void {
       console.log('Common Play')
     } else {
       if (sound.playing()) {
-        pause()
+        pause(300)
       } else {
         play()
         console.log('Common Play 2')
@@ -84,8 +84,15 @@ export function stop(): void {
 /**
  * Pauses playback
  */
-export function pause(): void {
-  sound.pause()
+export async function pause(delay?: number): Promise<void> {
+  if(delay){
+    sound.fade(1, 0, delay)
+    setTimeout(() => {
+      sound.pause()
+    }, delay)
+  } else {
+    sound.pause()
+  }
   Playing.set(false)
   console.log('Pause (Main Pause Method)')
 }
@@ -114,7 +121,7 @@ export async function end(): Promise<void> {
           new Blob(
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            [await window.electronAPI.getBuffer(localCurrent.path)],
+            [await window.electron.getBuffer(localCurrent.path)],
             { type: 'audio/mpeg' } /* (1) */
           )
         )
@@ -154,7 +161,7 @@ export async function back(): Promise<void> {
             new Blob(
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              [await window.electronAPI.getBuffer(localCurrent.path)],
+              [await window.electron.getBuffer(localCurrent.path)],
               { type: 'audio/mpeg' } /* (1) */
             )
           )

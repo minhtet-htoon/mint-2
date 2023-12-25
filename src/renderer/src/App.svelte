@@ -8,24 +8,41 @@
   import Navbar from './components/Navbar.svelte'
   import { page, Pages } from './utils/pages'
   import MiniPlayer from './components/MiniPlayer.svelte'
-  import { getLyrics } from './utils/lrc'
+  import { getLyrics, lrcSearch } from './utils/lrc'
   import fileSad from './assets/file-sad.svg'
   import Icon from './components/Icon.svelte'
   import LyricDisplay from './components/LyricDisplay.svelte'
+  import Library from './components/library/Library.svelte'
 
   let promise
 
+  let lrcFetch
+
   let search: boolean
+
+  let dir: string
 
   current.subscribe(() => {
     search = false
+    lrcFetch = undefined
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      window.electron.updateRPC(
+        $current.data.common.album ? $current.data.common.album : 'Unknown',
+        $current.data.common.title ? $current.data.common.title : 'Unknown',
+        $current.data.common.artist ? $current.data.common.artist : 'Unknown'
+      )
+    } catch {
+      /* empty */
+    }
   })
 
   const initiateImport = async function (): Promise<void> {
     try {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      queue.set(await init(await window.electronAPI.openFile(), false))
+      queue.set(await init(await window.electron.openFile(), false))
       $queue.forEach((value: ISong) => {
         console.log(value)
       })
@@ -41,7 +58,9 @@
     try {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      queue.set(await init(await window.electronAPI.openFolder(), false))
+      const obj = await window.electron.openFolder()
+      dir = obj.dir
+      queue.set(await init(obj.songs, false))
       $queue.forEach((value: ISong) => {
         console.log(value)
       })
@@ -61,36 +80,8 @@
   }
 
   function handleSearchClick(): void {
-    promise = lrcSearch()
+    lrcFetch = lrcSearch($current)
     search = true
-  }
-
-  async function lrcSearch(): Promise<boolean> {
-    console.log(
-      `https://lrclib.net/api/get?track_name=${$current.data.common.title}&artist_name=${
-        $current.data.common.artist
-      }&album_name=${$current.data.common.album}&duration=${Math.trunc(
-        $current.data.format.duration
-      ).toString()}`
-    )
-    const res = await fetch(
-      `https://lrclib.net/api/get?track_name=${$current.data.common.title}&artist_name=${
-        $current.data.common.artist
-      }&album_name=${$current.data.common.album}&duration=${Math.trunc(
-        $current.data.format.duration
-      ).toString()}`
-    )
-    const text = await res.text()
-
-    if (res.ok) {
-      const obj = JSON.parse(text)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      window.electronAPI.writeLyric($current.path, obj.syncedLyrics)
-      return true
-    } else {
-      return false
-    }
   }
 </script>
 
@@ -125,9 +116,9 @@
           <Navbar />
         </div>
         {#if $page === Pages.Player}
-          <div class="flex flex-col flex-1">
+          <div class="flex flex-col w-full flex-1">
             <Player />
-            <div class="overflow-x-auto h-[50vh] overflow-y-auto">
+            <div class="overflow-x-auto h-[65vh] overflow-y-auto">
               <table class="table table-zebra table-pin-rows">
                 <thead>
                   <tr>
@@ -135,6 +126,7 @@
                     <th>Title</th>
                     <th>Artist</th>
                     <th>Album</th>
+                    <th class="text-center">Lyrics</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -171,7 +163,7 @@
                       () => {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         //@ts-ignore
-                        window.electronAPI.openBrowser(
+                        window.electron.openBrowser(
                           'https://en.wikipedia.org/wiki/LRC_(file_format)'
                         )
                       }}
@@ -179,12 +171,42 @@
                     >
                   </p>
                   <p>{_err}</p>
-                  <button class="btn" on:click={handleSearchClick} disabled={search}
-                    >Try to Find Lrc Online and Make New File</button
-                  >
+                  <div class="w-full flex align-middle justify-center">
+                    <button
+                      class="btn w-1/5 justify-center align-middle flex"
+                      on:click={handleSearchClick}>Try to Find Lrc Online and Make New File</button
+                    >
+                  </div>
+                  {#await lrcFetch}
+                    <progress class="w-full progress" />
+                  {:then status}
+                    {#if status}
+                      <p>LRC File Found and Saved. Please exit page and come back to see lyrics</p>
+                    {:else}
+                      <p>LRC File Not Found</p>
+                    {/if}
+                  {/await}
                 </div>
               {/await}
             </div>
+            <div class="w-full flex">
+              <MiniPlayer />
+            </div>
+          </div>
+        {:else if $page === Pages.Library}
+          <div class="flex flex-col w-full">
+            <div class="grow justify-center align-middle flex flex-col flex-1">
+              {#await window.electron.getLib(dir) then lib}
+                <Library library={lib} />
+              {/await}
+            </div>
+            <div class="w-full flex">
+              <MiniPlayer />
+            </div>
+          </div>
+        {:else if $page === Pages.Editor}
+          <div class="flex flex-col w-full">
+            <div class="grow justify-center align-middle flex flex-col flex-1">Editor</div>
             <div class="w-full flex">
               <MiniPlayer />
             </div>

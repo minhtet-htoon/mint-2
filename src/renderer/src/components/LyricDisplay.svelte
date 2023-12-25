@@ -24,7 +24,7 @@
     </tbody>
   </table>
 </div>
-<p class="font-bold">{lyrFromTime($Progress, lrc)}</p>
-<p class="">{nextLine($Progress, lrc, 1)}</p>
-<p class="">{nextLine($Progress, lrc, 2)}</p>
-<p class="">{nextLine($Progress, lrc, 3)}</p>
+<p class="h-5 font-bold">{lyrFromTime($Progress, lrc)}</p>
+<p class="h-5">{nextLine($Progress, lrc, 1)}</p>
+<p class="h-5">{nextLine($Progress, lrc, 2)}</p>
+<p class="h-5">{nextLine($Progress, lrc, 3)}</p>

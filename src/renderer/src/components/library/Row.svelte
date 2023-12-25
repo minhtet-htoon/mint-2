@@ -5,8 +5,22 @@
   import * as player from '../../utils/player'
   import { Playing } from '../../utils/player'
   import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-svelte'
+  import Icon from '../Icon.svelte'
+  import check from '../../assets/check.svg'
+  import x from '../../assets/x.svg'
+  import download from '../../assets/download.svg'
+  import { lrcSearch } from '../../utils/lrc'
 
   export let song: ISong
+
+  let promise
+
+  let downloadAttempted = false
+
+  function handleDownloadButton(): void {
+    promise = lrcSearch(song)
+    downloadAttempted = true
+  }
 
   function handleRowButton(): void {
     player.stop()
@@ -17,7 +31,7 @@
   let dialog
 </script>
 
-<tr>
+<tr class="bg-white transition ease-in-out duration-300 hover:bg-gray-200">
   <th>
     <label>
       <button class="btn h-full btn-ghost btn-xs" on:click={handleRowButton}>
@@ -50,8 +64,38 @@
     {song.data.common.artist}
   </td>
   <td>{song.data.common.album}</td>
+  <td>
+    <div class="w-full justify-center flex">
+      {#await // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      window.electron.fileExists(song.path.split('.')[0] + '.lrc')}
+        <span class="loading loading-bars" />
+      {:then lrc}
+        {#if lrc}
+          <Icon path={check} class="w-6 h-6 stroke-green-500" />
+        {:else if !downloadAttempted}
+          <button class="btn transition ease-in-out duration-300 hover:scale-110" on:click={handleDownloadButton}>
+            <Icon class="w-6 h-6 stroke-red-500" path={download} />
+          </button>
+        {:else}
+          {#await promise}
+            <span class="loading loading-bars" />
+          {:then val}
+            {#if val}
+              <Icon path={check} class="w-6 h-6 stroke-green-500" />
+            {:else}
+              <Icon path={x} class="w-6 h-6 stroke-green-500" />
+            {/if}
+          {/await}
+        {/if}
+      {/await}
+    </div>
+  </td>
   <th>
-    <button class="btn btn-ghost btn-xs" on:click={() => dialog.showModal()}>Details</button>
+    <button
+      class="btn transition ease-in-out duration-300 hover:scale-110 btn-ghost btn-xs"
+      on:click={() => dialog.showModal()}>Details</button
+    >
   </th>
 </tr>
 
@@ -60,7 +104,7 @@
     <div class="flex">
       <div class="flex items-center gap-3">
         <div class="avatar w-full pr-5">
-          <div class="">
+          <div class="rounded-2xl">
             <img
               src={URL.createObjectURL(
                 new Blob([song.data.common.picture[0].data], { type: 'image/jpeg' } /* (1) */)

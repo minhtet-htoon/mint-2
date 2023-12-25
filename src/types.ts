@@ -9,3 +9,20 @@ export interface ILyric {
   time: number
   line: string
 }
+export interface ILib {
+  ver: string
+  artists: {
+    name: string
+    albums: {
+      name: string
+      songs: {
+        path: string
+        name?: string
+      }[]
+    }[]
+  }[]
+  playlists: {
+    name: string
+    paths: string[]
+  }[]
+}

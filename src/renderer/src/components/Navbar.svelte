@@ -10,7 +10,10 @@
   let modalPage: number = 0
 </script>
 
-<ul class="menu flex-col space-y-3 bg-base-200 h-screen w-full rounded-box">
+<ul class="menu flex flex-col space-y-3 bg-base-200 h-screen grow w-full rounded-box">
+  <div class="bg-blue-600 flex rounded-box w-auto align-middle justify-center h-[10%] m-3">
+    <p>Mint Music Logo</p>
+  </div>
   <li>
     <button
       on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -39,7 +42,7 @@
     <button
       on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       () => {
-        page.set(Pages.Library)
+        page.set(Pages.Editor)
       }}>Metadata Editor</button
     >
   </li>
@@ -52,6 +55,8 @@
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         dialog.showModal()
+
+        modalPage = 0
       }}
     >
       <div class="flex-row grow space-x-3 justify-between flex">
@@ -120,14 +125,14 @@
             THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           </p>
           <h2 class="text-3xl">Acknowledgements</h2>
-          <a
-            href="#"
+          <button
+            class="underline text-left text-blue-500"
             on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
             () => {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               //@ts-ignore
-              window.electronAPI.openBrowser('https://lrclib.net')
-            }}>Lyrics API by LRCLib.net</a
+              window.electron.openBrowser('https://lrclib.net')
+            }}>Lyrics API by LRCLib.net</button
           >
         {/if}
       </div>
