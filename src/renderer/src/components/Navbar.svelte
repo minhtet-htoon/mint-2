@@ -31,19 +31,34 @@
     >
   </li>
   <li>
-    <button
-      on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-      () => {
-        page.set(Pages.Library)
-      }}>Library</button
-    >
+    <details open>
+      <summary>Library</summary>
+      <ul>
+        <li>
+          <button
+            on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+            () => {
+              page.set(Pages.Library)
+            }}>Browse</button
+          >
+        </li>
+        <li>
+          <button
+            on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+            () => {
+              page.set(Pages.FileManager)
+            }}>Manage Files</button
+          >
+        </li>
+      </ul>
+    </details>
   </li>
   <li>
     <button
       on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       () => {
         page.set(Pages.Editor)
-      }}>Metadata Editor</button
+      }}>Metadata Editor and FFMPEG</button
     >
   </li>
   <div class="flex grow" />

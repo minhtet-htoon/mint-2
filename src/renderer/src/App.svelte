@@ -1,6 +1,6 @@
 <script lang="ts">
   import imgURL from './assets/Files.png'
-  import { current, init, queue } from './utils/queue'
+  import { current, init, queue, lib } from './utils/queue'
   import Row from './components/library/Row.svelte'
   import type { ISong } from '../../types'
   import Player from './components/Player.svelte'
@@ -13,12 +13,13 @@
   import Icon from './components/Icon.svelte'
   import LyricDisplay from './components/LyricDisplay.svelte'
   import Library from './components/library/Library.svelte'
+  import FileManager from './components/FileManager.svelte'
 
   let promise
 
   let lrcFetch
 
-  let search: boolean
+  let search = false
 
   let dir: string
 
@@ -26,8 +27,6 @@
     search = false
     lrcFetch = undefined
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
       window.electron.updateRPC(
         $current.data.common.album ? $current.data.common.album : 'Unknown',
         $current.data.common.title ? $current.data.common.title : 'Unknown',
@@ -40,8 +39,6 @@
 
   const initiateImport = async function (): Promise<void> {
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
       queue.set(await init(await window.electron.openFile(), false))
       $queue.forEach((value: ISong) => {
         console.log(value)
@@ -56,15 +53,14 @@
 
   async function importFolder(): Promise<void> {
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
       const obj = await window.electron.openFolder()
       dir = obj.dir
       queue.set(await init(obj.songs, false))
       $queue.forEach((value: ISong) => {
         console.log(value)
       })
-      // current.update($queue[0])
+
+      lib.set(await window.electron.getLib(dir))
     } catch (e) {
       console.log(e)
     }
@@ -93,7 +89,7 @@
         <h1 class="left-auto right-auto text-8xl">No Files Present</h1>
         <div class="flex-1" />
       </div>
-      <img src={imgURL} class="p-5" alt="File Icon" />
+      <img src={imgURL} class="p-5 shrink" alt="File Icon" />
       <div class="flex flex-row">
         <div class="flex-1" />
         <h2 class="text-5xl">Import files or a library</h2>
@@ -107,18 +103,18 @@
       </div>
       {#if promise}
         {#await promise}
-          <progress class="progress w-full grow" />
+          <progress class="progress w-full h-5 grow" />
         {/await}
       {/if}
     {:else}
       <div class="flex space-x-5 flex-row w-screen">
-        <div class="flex w-[15vw]">
+        <div class="w-96">
           <Navbar />
         </div>
         {#if $page === Pages.Player}
-          <div class="flex flex-col w-full flex-1">
+          <div class="flex flex-col h-screen w-full flex-1">
             <Player />
-            <div class="overflow-x-auto h-[65vh] overflow-y-auto">
+            <div class="overflow-x-auto h-[65vh] shrink overflow-y-auto">
               <table class="table table-zebra table-pin-rows">
                 <thead>
                   <tr>
@@ -161,8 +157,7 @@
                     For parsing problems, refer to this <button
                       on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
                       () => {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        //@ts-ignore
+                        //@ts-ignore 2345
                         window.electron.openBrowser(
                           'https://en.wikipedia.org/wiki/LRC_(file_format)'
                         )
@@ -174,7 +169,8 @@
                   <div class="w-full flex align-middle justify-center">
                     <button
                       class="btn w-1/5 justify-center align-middle flex"
-                      on:click={handleSearchClick}>Try to Find Lrc Online and Make New File</button
+                      on:click={handleSearchClick}
+                      disabled={search}>Try to Find Lrc Online and Make New File</button
                     >
                   </div>
                   {#await lrcFetch}
@@ -194,11 +190,18 @@
             </div>
           </div>
         {:else if $page === Pages.Library}
-          <div class="flex flex-col w-full">
-            <div class="grow justify-center align-middle flex flex-col flex-1">
-              {#await window.electron.getLib(dir) then lib}
-                <Library library={lib} />
-              {/await}
+          <div class="flex flex-col w-full top-3 h-screen justify-between">
+            <div class="justify-center shrink h-[90vh] overflow-y-scroll align-middle">
+              <Library library={$lib} />
+            </div>
+            <div class="w-full flex">
+              <MiniPlayer />
+            </div>
+          </div>
+        {:else if $page === Pages.FileManager}
+          <div class="flex flex-col w-full top-3 h-screen justify-between">
+            <div class="justify-center shrink h-[90vh] overflow-y-auto align-middle">
+              <FileManager lib={$lib} />
             </div>
             <div class="w-full flex">
               <MiniPlayer />
@@ -206,7 +209,16 @@
           </div>
         {:else if $page === Pages.Editor}
           <div class="flex flex-col w-full">
-            <div class="grow justify-center align-middle flex flex-col flex-1">Editor</div>
+            <div class="grow justify-center align-middle flex flex-col flex-1">
+              <button class="btn" on:click={()=>{() => {
+                    //@ts-ignore 2345
+                        window.electron.openBrowser(
+                          '"C:\\Program Files\\MusicBrainz Picard\\Picard.exe"'
+                        )
+                      }}}>
+                Launch External Editor
+              </button>
+            </div>
             <div class="w-full flex">
               <MiniPlayer />
             </div>

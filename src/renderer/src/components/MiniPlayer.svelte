@@ -80,8 +80,8 @@
   </div>
   <div class="flex flex-1 h-full flex-col justify-center">
     <div class="flex flex-row w-full">
-      <p class="w-1/2 text-right font-bold pr-3 border-r-2">{$current.data.common.title}</p>
-      <p class="w-1/2 text-left pl-3">{$current.data.common.artist}</p>
+      <p class="w-1/2 text-right font-bold pr-3 border-r-2">{$current.data.common.title ? $current.data.common.title : $current.path}</p>
+      <p class="w-1/2 text-left pl-3">{$current.data.common.artist ? $current.data.common.artist : ''}</p>
     </div>
     <div class="flex space-x-5 flex-row">
       <div class="">{formatTime($Progress)}</div>

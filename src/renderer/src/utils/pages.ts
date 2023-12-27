@@ -5,6 +5,7 @@ export enum Pages {
   Player,
   Library,
   Lyrics,
+  FileManager,
   Editor
 }
 

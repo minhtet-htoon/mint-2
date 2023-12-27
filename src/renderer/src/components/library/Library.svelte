@@ -4,20 +4,28 @@
   export let library: ILib
 </script>
 
-{#each library.artists as artist}
-  <div class="w-full flex flex-row">
-    <div class="w-1/2">
-      <h1 class="text-3xl">{artist.name}</h1>
-    </div>
-    <div class="w-1/2">
-      {#each artist.albums as album}
-        <h1 class="text-2xl">{album.name}</h1>
-        <ul>
-          {#each album.songs as song}
-            <li>{song.name}</li>
-          {/each}
-        </ul>
-      {/each}
-    </div>
-  </div>
-{/each}
+<table class="table">
+  <tbody>
+    {#each library.artists as artist}
+      <tr>
+        <div class="w-full p-5 flex flex-row">
+          <div class="w-1/2">
+            <h1 class="text-3xl">{artist.name}</h1>
+          </div>
+          <div class="w-1/2">
+            {#each artist.albums as album}
+              <h1 class="text-2xl">{album.name}</h1>
+              <table class="table w-full">
+                <tbody>
+                  {#each album.songs as song}
+                    <tr class="hover">{song.name}</tr>
+                  {/each}
+                </tbody>
+              </table>
+            {/each}
+          </div>
+        </div>
+      </tr>
+    {/each}
+  </tbody>
+</table>

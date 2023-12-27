@@ -11,6 +11,7 @@ export interface ILyric {
 }
 export interface ILib {
   ver: string
+  dirs: string[]
   artists: {
     name: string
     albums: {

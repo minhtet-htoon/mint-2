@@ -1,9 +1,10 @@
 import { dialog } from 'electron'
 import { parseFile } from 'music-metadata'
-import type { ILib, ISong } from "../../types";
+import type { ILib, ISong } from '../../types'
 import * as fs from 'fs'
 import { globSync } from 'glob'
 import { createLibrary, writeLib } from './library'
+import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent
 
 export async function load(): Promise<ISong[]> {
   const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -46,20 +47,44 @@ export async function createSongs(paths: string[]): Promise<ISong[]> {
 
 export async function loadFolder(): Promise<{ songs: ISong[]; dir: string }> {
   const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['multiSelections', 'openDirectory']
+    properties: ['openDirectory']
   })
   console.log(`Found Paths: ${filePaths[0]}/**/*`)
-  console.log(globSync(filePaths[0].concat('/**/*'), { absolute: true }))
   if (!canceled) {
-    const songs = createSongs(
-      globSync(filePaths[0].concat('/**/*'),{ absolute: true })
-        .filter((value) => {
-          const ext = value.split('.').pop()
-          return ext === 'mp3' || ext === 'flac'
+    let songs: Promise<ISong[]>
+    if (fs.existsSync(filePaths[0] + '/library.mint.json')) {
+      console.log('library file found, importing from library')
+      // @ts-ignore 2345
+      const lib = await getLib(undefined, filePaths[0])
+      const paths: string[] = []
+      lib.artists.forEach((artist) => {
+        artist.albums.forEach((album) => {
+          album.songs.forEach((song) => {
+            paths.push(song.path)
+          })
         })
-        .reverse()
-    )
-    writeLib(filePaths[0], createLibrary(await songs))
+      })
+      songs = createSongs(paths)
+    } else {
+      console.warn('No Library File')
+      songs = createSongs(
+        globSync(filePaths[0].concat('/**/*'), { absolute: true })
+          .filter((value) => {
+            const ext = value.split('.').pop()
+            return ext === 'mp3' || ext === 'flac'
+          })
+          .reverse()
+      )
+      console.log(songs)
+      writeLib(
+        filePaths[0],
+        createLibrary(
+          await songs,
+          { ver: '0.0.1', dirs: [filePaths[0]], artists: [], playlists: [] },
+          filePaths[0]
+        )
+      )
+    }
     return { songs: await songs, dir: filePaths[0] }
   } else {
     return {
@@ -69,25 +94,69 @@ export async function loadFolder(): Promise<{ songs: ISong[]; dir: string }> {
   }
 }
 
-export function loadBuffer(_event, path: string): Buffer {
+export async function libAdd(
+  _event: IpcMainInvokeEvent,
+  dir: string
+): Promise<{ songs: ISong[]; dir: string }> {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  })
+  if (!canceled) {
+    const songs = await createSongs(
+      globSync(filePaths[0].concat('/**/*'), { absolute: true })
+        .filter((value) => {
+          const ext = value.split('.').pop()
+          return ext === 'mp3' || ext === 'flac'
+        })
+        .reverse()
+    )
+    if (fs.existsSync(dir.concat('/library.mint.json'))) {
+      writeLib(
+        dir,
+        createLibrary(
+          songs,
+          JSON.parse(fs.readFileSync(dir + '/library.mint.json', 'utf-8')),
+          filePaths[0]
+        )
+      )
+    }
+    return { songs: songs.reverse(), dir: dir }
+  } else {
+    return {
+      songs: [],
+      dir: filePaths[0]
+    }
+  }
+}
+
+export function loadBuffer(_event: IpcMainInvokeEvent, path: string): Buffer {
   return fs.readFileSync(path)
 }
 
-export function loadLyric(_event, path: string): string {
-  console.log(fs.readFileSync(path.split('.')[0].concat('.lrc'), { encoding: 'utf8' }))
+export function loadLyric(_event: IpcMainInvokeEvent, path: string): string {
+  const array = path.split('.')
+  array.pop()
+  console.log(''.concat(...array, '.lrc'))
   const split = path.split('.')
   split.pop()
   return fs.existsSync(''.concat(...split, '.lrc'))
-    ? fs.readFileSync(path.split('.')[0].concat('.lrc'), { encoding: 'utf8' })
+    ? fs.readFileSync(''.concat(...split, '.lrc'), { encoding: 'utf8' })
     : 'error'
 }
 
-export async function writeLyric(_event, path: string, lyrics: string): Promise<void> {
-  fs.writeFile(path.split('.')[0] + '.lrc', lyrics, (err) => {
+export async function writeLyric(
+  _event: IpcMainInvokeEvent,
+  path: string,
+  lyrics: string
+): Promise<void> {
+  const array = path.split('.')
+  array.pop()
+  console.log(''.concat(...array, '.lrc'))
+  fs.writeFile(''.concat(...array, '.lrc'), lyrics, (err) => {
     console.log(err)
   })
 }
 
-export async function getLib(_event, path: string): Promise<ILib> {
+export async function getLib(_event: IpcMainInvokeEvent, path: string): Promise<ILib> {
   return JSON.parse(fs.readFileSync(path + '/library.mint.json', 'utf-8'))
 }

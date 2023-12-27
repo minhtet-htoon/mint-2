@@ -9,13 +9,14 @@
   import check from '../../assets/check.svg'
   import x from '../../assets/x.svg'
   import download from '../../assets/download.svg'
-  import { lrcSearch } from '../../utils/lrc'
+  import { lrcFileName, lrcSearch } from '../../utils/lrc'
 
   export let song: ISong
 
   let promise
 
   let downloadAttempted = false
+
 
   function handleDownloadButton(): void {
     promise = lrcSearch(song)
@@ -27,6 +28,7 @@
     current.set(song)
     player.play()
   }
+
 
   let dialog
 </script>
@@ -66,15 +68,16 @@
   <td>{song.data.common.album}</td>
   <td>
     <div class="w-full justify-center flex">
-      {#await // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      window.electron.fileExists(song.path.split('.')[0] + '.lrc')}
+      {#await window.electron.fileExists(lrcFileName(song.path))}
         <span class="loading loading-bars" />
       {:then lrc}
         {#if lrc}
           <Icon path={check} class="w-6 h-6 stroke-green-500" />
         {:else if !downloadAttempted}
-          <button class="btn transition ease-in-out duration-300 hover:scale-110" on:click={handleDownloadButton}>
+          <button
+            class="btn transition ease-in-out duration-300 hover:scale-110"
+            on:click={handleDownloadButton}
+          >
             <Icon class="w-6 h-6 stroke-red-500" path={download} />
           </button>
         {:else}

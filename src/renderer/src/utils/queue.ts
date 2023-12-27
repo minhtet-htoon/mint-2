@@ -1,9 +1,10 @@
-import type { ISong } from '../../../types'
+import type { ILib, ISong } from '../../../types'
 import { type Writable, writable } from 'svelte/store'
 
 export const queue: Writable<ISong[]> = writable([])
 export const current: Writable<ISong> = writable()
 export const shuffled: Writable<boolean> = writable(false)
+export const lib: Writable<ILib> = writable()
 export async function init(songs: ISong[], rand: boolean): Promise<ISong[]> {
   songs.forEach((v) => {
     if (v.data === undefined) {

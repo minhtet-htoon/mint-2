@@ -10,5 +10,7 @@ contextBridge.exposeInMainWorld('electron', {
   fileExists: (path: string) => ipcRenderer.invoke('file:exists', path),
   downloadCheck: (path: string) => ipcRenderer.invoke('lyric:check', path),
   getLib: (path: string) => ipcRenderer.invoke('file:lib', path),
-  updateRPC: (album: string, song: string, artist: string) => ipcRenderer.invoke('rpc', album, song, artist)
+  updateRPC: (album: string, song: string, artist: string) =>
+    ipcRenderer.invoke('rpc', album, song, artist),
+  libAdd: (lib: string) => ipcRenderer.invoke('dialog:add', lib),
 })

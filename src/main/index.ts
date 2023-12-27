@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { load, loadFolder, loadBuffer, loadLyric, writeLyric, getLib } from './utils/io'
+import { load, loadFolder, loadBuffer, loadLyric, writeLyric, getLib, libAdd } from './utils/io'
 import * as fs from 'fs'
 const client = require('discord-rich-presence')('823667639548903454')
 
@@ -42,11 +42,14 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  client.updatePresence({
-    state: 'Idle',
-    details: 'Idle',
-    instance: true
-  })
+  if (process.env.NODE_ENV !== 'development') {
+    client.updatePresence({
+      state: 'Idle',
+      details: 'Idle',
+      instance: true
+    })
+  }
+  console.log(process.env.NODE_ENV)
   // Set app user model id for windows
   ipcMain.handle('dialog:openFile', load)
   ipcMain.handle('dialog:openFolder', loadFolder)
@@ -63,12 +66,15 @@ app.whenReady().then(() => {
     return fs.existsSync(path)
   })
   ipcMain.handle('file:lib', getLib)
-  ipcMain.handle('rpc', (_event, album, song, artist) => {
-    client.updatePresence({
-      state: 'Listening',
-      details: `${song} on ${album} by ${artist}`
-    })
+  ipcMain.handle('rpc', (_event, _album, song, artist) => {
+    if (process.env.NODE_ENV !== 'development') {
+      client.updatePresence({
+        state: 'Listening',
+        details: `${song} by ${artist}`
+      })
+    }
   })
+  ipcMain.handle('dialog:add', libAdd)
   electronApp.setAppUserModelId('com.electron')
 
   // Default open or close DevTools by F12 in development

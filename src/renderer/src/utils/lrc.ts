@@ -1,4 +1,11 @@
 import { type ILyric, type ISong } from '../../../types'
+
+export function lrcFileName(musicPath: string): string {
+  const array = musicPath.split('.')
+  array.pop()
+  console.log(''.concat(...array, '.lrc'))
+  return ''.concat(...array, '.lrc')
+}
 /**
  * Finds attempts to find lrc file in the same directory with the same path
  * Expects lrc files without metadata
@@ -33,6 +40,9 @@ export async function getLyrics(path: string): Promise<ILyric[]> {
       line: val.split(']').pop()
     })
   })
+  if (ret.length === 0) {
+    throw 'No File'
+  }
   console.log(ret)
   return ret
 }
@@ -70,6 +80,27 @@ export function nextLine(time: number, lrcs: ILyric[], n: number): string {
     })[n - 1].line
   } catch (e) {
     return '--'
+  }
+}
+export function linesAfter(time: number, lrcs: ILyric[]): ILyric[] {
+  try {
+    return lrcs.filter((v) => {
+      return v.time >= time
+    })
+  } catch (e) {
+    return []
+  }
+}
+
+export function linesBefore(time: number, lrcs: ILyric[]): ILyric[] {
+  try {
+    const ret = lrcs.filter((v) => {
+      return v.time < time
+    })
+    ret.pop()
+    return ret
+  } catch (e) {
+    return []
   }
 }
 /**

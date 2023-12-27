@@ -1,5 +1,6 @@
 <script lang="ts">
   export let path: string
+
 </script>
 
 <svg class={$$props.class ?? ''}>

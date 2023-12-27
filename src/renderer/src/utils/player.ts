@@ -85,7 +85,7 @@ export function stop(): void {
  * Pauses playback
  */
 export async function pause(delay?: number): Promise<void> {
-  if(delay){
+  if (delay) {
     sound.fade(1, 0, delay)
     setTimeout(() => {
       sound.pause()
