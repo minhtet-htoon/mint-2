@@ -12,5 +12,5 @@ contextBridge.exposeInMainWorld('electron', {
   getLib: (path: string) => ipcRenderer.invoke('file:lib', path),
   updateRPC: (album: string, song: string, artist: string) =>
     ipcRenderer.invoke('rpc', album, song, artist),
-  libAdd: (lib: string) => ipcRenderer.invoke('dialog:add', lib),
+  libAdd: (lib: string, offset?: number) => ipcRenderer.invoke('dialog:add', lib, offset)
 })

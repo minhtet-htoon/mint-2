@@ -8,7 +8,7 @@
   export let lib: ILib
   async function loadFolder(): Promise<void> {
     try {
-      const obj = await window.electron.libAdd($globalLib.dirs[0])
+      const obj = await window.electron.libAdd($globalLib.dirs[0], $queue.length)
       queue.set([...$queue, ...obj.songs])
       $queue.forEach((value: ISong) => {
         console.log(value)
@@ -29,7 +29,7 @@
   <h1 class="text-5xl">Folders</h1>
   {#each lib.dirs as dir, i}
     <div class="w-full flex justify-center">
-      <div class="h-56 w-3/4 flex flex-col justify-center bg-gray-400 rounded-box">
+      <div class="h-56 w-3/4 flex flex-col justify-center bg-base-200 rounded-box">
         <div class="flex p-5 justify-center flex-row">
           {#if i === 0}
             <IconFolderRoot size={56} />
@@ -46,7 +46,7 @@
   {/each}
   <button class="w-full flex justify-center" on:click={loadFolder}>
     <div
-      class="h-56 btn w-3/4 flex flex-col justify-center hover:scale-105 justify-items-start bg-gray-400 rounded-box"
+      class="h-56 btn w-3/4 flex flex-col justify-center hover:scale-105 justify-items-start bg-base-200 rounded-box"
     >
       <div class="flex p-5 flex-row items-start">
         <IconFolderPlus size={56} />
@@ -59,7 +59,7 @@
   </button>
   <button class="w-full flex justify-center" on:click={unload}>
     <div
-      class="h-56 w-3/4 btn flex flex-col justify-center hover:scale-105 hover:bg-red-500 justify-items-start bg-gray-400 rounded-box"
+      class="h-56 w-3/4 btn flex flex-col justify-center hover:scale-105 hover:bg-error justify-items-start bg-base-200 rounded-box"
     >
       <div class="flex p-5 flex-row items-start">
         <IconFolderMinus size={56} />

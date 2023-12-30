@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { current, queue, regen, shuffled } from '../utils/queue'
+  import { albumImage, current, queue, regen, shuffled } from "../utils/queue";
   import { back, commonButton, end, formatTime, getPlaying, Playing, Progress, sound } from "../utils/player";
   import {
     IconArrowsRight,
-    IconArrowsShuffle2,
+    IconArrowsShuffle,
     IconPlayerPause,
     IconPlayerPlay,
     IconPlayerSkipBack,
@@ -44,25 +44,23 @@
 <div class="h-24 p-5 rounded-2xl space-x-5 w-full flex flex-row">
   <div class="flex mask mask-squircle h-full">
     <img
-      src={URL.createObjectURL(
-        new Blob([$current.data.common.picture[0].data], { type: 'image/jpeg' } /* (1) */)
-      )}
+      src={albumImage($current)}
       alt="Album Cover"
     />
   </div>
   <div class="flex flex-row">
     <button class="btn h-full btn-ghost btn-xs" on:click={back}>
-      <IconPlayerSkipBack class="h-full" />
+      <IconPlayerSkipBack class="h-full stroke-primary" />
     </button>
     <button class="btn h-full btn-ghost btn-xs" on:click={commonButton}>
       {#if $Playing}
-        <IconPlayerPause class="h-full"></IconPlayerPause>
+        <IconPlayerPause class="h-full stroke-primary"></IconPlayerPause>
       {:else}
-        <IconPlayerPlay class="h-full" />
+        <IconPlayerPlay class="h-full stroke-primary" />
       {/if}
     </button>
     <button class="btn h-full btn-ghost btn-xs" on:click={end}>
-      <IconPlayerSkipForward class="h-full" />
+      <IconPlayerSkipForward class="h-full stroke-primary" />
     </button>
     <button
       class="btn btn-ghost h-full btn-xs"
@@ -72,9 +70,9 @@
       }}
     >
       {#if !$shuffled}
-        <IconArrowsRight class="h-full" />
+        <IconArrowsRight class="h-full stroke-primary" />
       {:else}
-        <IconArrowsShuffle2 class="h-full" />
+        <IconArrowsShuffle class="h-full stroke-primary" />
       {/if}
     </button>
   </div>
@@ -88,7 +86,7 @@
       <div class="grow">
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions-->
         <progress
-          class="progress"
+          class="progress progress-primary"
           on:mousemove={handleMove}
           on:mousedown={() => {
             sound.volume(0)

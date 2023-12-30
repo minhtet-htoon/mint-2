@@ -105,5 +105,5 @@ export function createLibrary(songs: ISong[], lib: ILib, dir: string): ILib {
 }
 
 export function writeLib(path: string, lib: ILib): void {
-  writeFileSync(path + '/library.mint.json', JSON.stringify(lib))
+  writeFileSync(path + '/library.mint.json', JSON.stringify(lib, null, '\t'))
 }

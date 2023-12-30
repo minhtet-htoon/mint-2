@@ -10,7 +10,7 @@ export function lrcFileName(musicPath: string): string {
  * Finds attempts to find lrc file in the same directory with the same path
  * Expects lrc files without metadata
  * @param {string} path
- * @returns {string}
+ * @returns {Promise<ILyric[]>}
  * */
 export async function getLyrics(path: string): Promise<ILyric[]> {
   if (!path) {
@@ -67,21 +67,11 @@ export function lyrFromTime(time: number, lrcs: ILyric[]): string {
 }
 
 /**
- * Returns the next n lyric to display (e.g. n = 1 for next line and n = 2 for the one after that)
+ * Returns all lyrics after given time
  * @param {number} time
  * @param {ILyric[]} lrcs
- * @param {number} n
- * @returns string
+ * @returns {ILyric[]}
  */
-export function nextLine(time: number, lrcs: ILyric[], n: number): string {
-  try {
-    return lrcs.filter((v) => {
-      return v.time >= time
-    })[n - 1].line
-  } catch (e) {
-    return '--'
-  }
-}
 export function linesAfter(time: number, lrcs: ILyric[]): ILyric[] {
   try {
     return lrcs.filter((v) => {

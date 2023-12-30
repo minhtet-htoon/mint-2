@@ -25,7 +25,10 @@ export async function load(): Promise<ISong[]> {
   }
 }
 
-export async function createSongs(paths: string[]): Promise<ISong[]> {
+export async function createSongs(paths: string[], offset?: number): Promise<ISong[]> {
+  if (!offset) {
+    offset = 0
+  }
   const ret: ISong[] = []
   const tot = new Date()
   for (let i = 0; i < paths.length; i++) {
@@ -36,7 +39,7 @@ export async function createSongs(paths: string[]): Promise<ISong[]> {
     ret.push({
       path: paths[i],
       data: dat,
-      id: dat === undefined ? -1 : i,
+      id: dat === undefined ? -1 : i + offset,
       error: dat === undefined ? 'Failed to Parse' : undefined
     })
     console.log(`Finished with ${paths[i]} in ${new Date().getTime() - time.getTime()} ms`)
@@ -96,7 +99,8 @@ export async function loadFolder(): Promise<{ songs: ISong[]; dir: string }> {
 
 export async function libAdd(
   _event: IpcMainInvokeEvent,
-  dir: string
+  dir: string,
+  offset?: number
 ): Promise<{ songs: ISong[]; dir: string }> {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openDirectory']
@@ -108,7 +112,8 @@ export async function libAdd(
           const ext = value.split('.').pop()
           return ext === 'mp3' || ext === 'flac'
         })
-        .reverse()
+        .reverse(),
+      offset
     )
     if (fs.existsSync(dir.concat('/library.mint.json'))) {
       writeLib(

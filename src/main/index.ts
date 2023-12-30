@@ -9,8 +9,8 @@ const client = require('discord-rich-presence')('823667639548903454')
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1920,
+    height: 1080,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),

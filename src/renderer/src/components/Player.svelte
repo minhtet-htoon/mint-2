@@ -1,10 +1,4 @@
 <script lang="ts">
-  import arrows from '../assets/arrows-right.svg'
-  import shuffle from '../assets/arrows-shuffle.svg'
-  import pause from '../assets/player-pause.svg'
-  import play from '../assets/player-play.svg'
-  import skip from '../assets/player-skip-forward.svg'
-  import iconBack from '../assets/player-skip-back.svg'
   import {
     back,
     sound,
@@ -15,9 +9,15 @@
     getPlaying,
     Progress
   } from '../utils/player'
-  import { current, queue, shuffled, regen } from '../utils/queue'
+  import { current, queue, shuffled, regen, albumImage } from '../utils/queue'
   import { onMount } from 'svelte'
-  import Icon from './Icon.svelte'
+  import {
+    IconArrowsRight, IconArrowsShuffle,
+    IconPlayerPause,
+    IconPlayerPlay,
+    IconPlayerSkipBack,
+    IconPlayerSkipForward
+  } from '@tabler/icons-svelte'
 
   onMount(() => {
     try {
@@ -47,34 +47,32 @@
   }
 </script>
 
-<div class="flex space-x-5 pb-5">
-  <div class="h-[30vh] aspect-square flex-none mask mask-squircle">
+<div class="flex h-[30vh] space-x-5 pb-5">
+  <div class="h-full aspect-square flex-none mask mask-squircle">
     <img
       class="aspect-square h-full object-scale-down"
-      src={URL.createObjectURL(
-        new Blob([$current.data.common.picture[0].data], { type: 'image/jpeg' } /* (1) */)
-      )}
+      src={albumImage($current)}
       alt="Album Cover"
     />
   </div>
   <div class="flex flex-col grow justify-end space-y-5">
-    <div class="flex flex-col grow space-y-5">
+    <div class="flex flex-col space-y-5">
       <h1 class="text-4xl font-bold pt-5">{$current.data.common.title}</h1>
       <h2 class="text-2xl">{$current.data.common.artist}</h2>
     </div>
     <div class="flex-row h-[10%]">
       <button class="btn h-full btn-ghost btn-xs" on:click={back}>
-        <Icon path={iconBack} class="h-full w-6" />
+        <IconPlayerSkipBack class="stroke-primary"/>
       </button>
       <button class="btn h-full btn-ghost btn-xs" on:click={commonButton}>
         {#if $Playing}
-          <Icon path={pause} class="h-full w-6" />
+          <IconPlayerPause class="stroke-primary"/>
         {:else}
-          <Icon path={play} class="h-full w-6" />
+          <IconPlayerPlay class="stroke-primary"/>
         {/if}
       </button>
       <button class="btn h-full btn-ghost btn-xs" on:click={end}>
-        <Icon path={skip} class="h-full w-6" />
+        <IconPlayerSkipForward class="stroke-primary"/>
       </button>
       <button
         class="btn btn-ghost h-full btn-xs"
@@ -84,9 +82,9 @@
         }}
       >
         {#if !$shuffled}
-          <Icon path={arrows} class="h-full w-6" />
+          <IconArrowsRight class="stroke-primary"/>
         {:else}
-          <Icon path={shuffle} class="h-full w-6" />
+          <IconArrowsShuffle class="stroke-primary"/>
         {/if}
       </button>
     </div>
@@ -98,7 +96,7 @@
           on:mousemove={handleMove}
           on:mousedown={()=>{sound.volume(0)}}
           on:mouseup={()=>{sound.volume(1)}}
-          class="progress"
+          class="progress progress-primary"
           value={$Progress}
           max={$current.data.format.duration}
         />

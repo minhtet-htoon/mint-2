@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { page, Pages } from '../utils/pages'
+  import { page, Pages, theme } from "../utils/pages";
   import settings from '../assets/settings.svg'
   import heart from '../assets/heart.svg'
   import Dialog from './Dialog.svelte'
   import Icon from './Icon.svelte'
   import { version } from '../utils/info'
+  import { IconHeart, IconSettings } from "@tabler/icons-svelte";
 
   let dialog
   let modalPage: number = 0
@@ -77,7 +78,7 @@
       <div class="flex-row grow space-x-3 justify-between flex">
         <p class="flex h-full align-middle">Mint Music v{version.mint}</p>
       </div>
-      <Icon path={settings} class="align-middle w-6 h-6" />
+      <IconSettings class="stroke-primary" />
     </button>
   </li>
 </ul>
@@ -106,7 +107,7 @@
           <div class="flex grow" />
           <li class="w-full flex flex-row">
             <p class="flex w-full">
-              Made with <Icon class="w-3 h-3" path={heart} /> by MintyH and Contributors
+              Made with <IconHeart class="stroke-primary" /> by MintyH and Contributors
             </p>
           </li>
         </ul>
@@ -149,6 +150,20 @@
               window.electron.openBrowser('https://lrclib.net')
             }}>Lyrics API by LRCLib.net</button
           >
+        {:else if modalPage === 1}
+          <h1>Theme</h1>
+          <select class="select border-primary" bind:value={$theme}>
+            <option disabled>Light Themes</option>
+            <option value="light">Light</option>
+            <option value="winter">Winter</option>
+            <option value="pastel">Pastel</option>
+            <option value="nord">Nord</option>
+            <option value="emerald">Emerald</option>
+            <option disabled>Dark Themes</option>
+            <option value="dark">Dark</option>
+            <option value="black">Black</option>
+            <option value="sunset">Sunset</option>
+          </select>
         {/if}
       </div>
     </div>

@@ -10,3 +10,4 @@ export enum Pages {
 }
 
 export const page: Writable<Pages> = writable(Pages.Files)
+export const theme: Writable<string> = writable('light')

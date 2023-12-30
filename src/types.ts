@@ -27,3 +27,8 @@ export interface ILib {
     paths: string[]
   }[]
 }
+
+export interface ISettings {
+  defaultPath: string
+  theme: string
+}
