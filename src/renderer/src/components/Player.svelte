@@ -76,7 +76,7 @@
       </button>
       <button
         class="btn btn-ghost h-full btn-xs"
-        on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        on:click={
         () => {
           queue.set(regen($queue, !$shuffled, getPlaying()))
         }}

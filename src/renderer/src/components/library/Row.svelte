@@ -13,12 +13,16 @@
     IconX
   } from '@tabler/icons-svelte'
   import { lrcFileName, lrcSearch } from '../../utils/lrc'
-  import { queue, current, albumImage } from "../../utils/queue";
+  import { queue, current, albumImage } from '../../utils/queue'
   import { play, stop } from '../../utils/player'
 
   export let song: ISong
 
-  let promise
+  export let vis: number
+
+  export let i: number
+
+  let promise: Promise<boolean>
 
   let downloadAttempted = false
   function handleDownloadButton(): void {
@@ -84,20 +88,8 @@
           return song.id === s.id
         })
       ]
-    const target = tempArr.findIndex((s) => {
-      return song.id === s.id
-    })
-    tempArr[target] =
-      tempArr[
-        tempArr.findIndex((s) => {
-          return $current.id === s.id
-        }) + 1
-      ]
-    tempArr[
-      tempArr.findIndex((s) => {
-        return $current.id === s.id
-      }) + 1
-    ] = temp
+    tempArr.splice(tempArr.indexOf(song), 1)
+    tempArr.splice(tempArr.indexOf($current) + 1, 0, temp)
     queue.set(tempArr)
   }
   let dialog
@@ -112,15 +104,16 @@
 >
   <th>
     <label>
-      <div class="dropdown dropdown-right">
+      <div
+        class={`${
+          i < vis - 3 ? 'dropdown dropdown-right' : 'dropdown dropdown-right dropdown-end'
+        }`}
+      >
         <button tabindex="0">
           <IconDotsVertical class="stroke-primary" />
         </button>
         <!-- svelte-ignore a11y-no-noninteractive-tabindex-->
-        <ul
-          tabindex="0"
-          class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
-        >
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow glass rounded-box w-52">
           <li>
             <button on:click={playNow} class="flex">
               <IconPlayerPlay class="stroke-primary" />
@@ -167,10 +160,7 @@
     <div class="flex items-center gap-3">
       <div class="avatar">
         <div class="mask mask-squircle w-12 h-12">
-          <img
-            src={albumImage(song)}
-            alt="Cover"
-          />
+          <img src={albumImage(song)} alt="Cover" />
         </div>
       </div>
       <div>
@@ -204,12 +194,12 @@
           </button>
         {:else}
           {#await promise}
-            <span class="loading loading-bars" />
+            <span class="loading loading-bars text-primary" />
           {:then val}
             {#if val}
-              <IconCheck class="stroke-primary" />
+              <IconCheck class="stroke-success" />
             {:else}
-              <IconX class="stroke-primary" />
+              <IconX class="stroke-error" />
             {/if}
           {/await}
         {/if}
@@ -230,10 +220,7 @@
       <div class="flex items-center gap-3">
         <div class="avatar w-full pr-5">
           <div class="rounded-2xl">
-            <img
-              src={albumImage(song)}
-              alt="Cover"
-            />
+            <img src={albumImage(song)} alt="Cover" />
           </div>
         </div>
       </div>

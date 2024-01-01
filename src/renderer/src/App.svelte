@@ -18,9 +18,24 @@
   import { Progress } from './utils/player'
   import { themeChange } from 'theme-change'
 
-  let promise
+  let promise: Promise<void>
 
-  let lrcFetch
+  let lrcFetch: Promise<boolean>
+
+  let visQueue: ISong[] = []
+
+  queue.subscribe((v) => {
+    try {
+      visQueue = []
+      for (let i = v.indexOf($current) - 3; i < v.indexOf($current) + 22; i++) {
+        if (i < v.length && i >= 0) {
+          visQueue.push($queue[i])
+        }
+      }
+    } catch {
+      visQueue = $queue
+    }
+  })
 
   let search = false
 
@@ -29,6 +44,13 @@
     search = false
     lrcFetch = undefined
     try {
+      visQueue = []
+      for (let i = $queue.indexOf($current) - 3; i < $queue.indexOf($current) + 22; i++) {
+        if (i < $queue.length && i >= 0) {
+          visQueue.push($queue[i])
+        }
+      }
+      //@ts-ignore 2345
       window.electron.updateRPC(
         $current.data.common.album ? $current.data.common.album : 'Unknown',
         $current.data.common.title ? $current.data.common.title : 'Unknown',
@@ -46,6 +68,7 @@
 
   const initiateImport = async function (): Promise<void> {
     try {
+      //@ts-ignore 2345
       queue.set(await init(await window.electron.openFile(), false))
       $queue.forEach((value: ISong) => {
         console.log(value)
@@ -60,16 +83,18 @@
 
   async function importFolder(): Promise<void> {
     try {
+      //@ts-ignore 2345
       const obj = await window.electron.openFolder()
       dir = obj.dir
       queue.set(purgeImages(await init(obj.songs, false)))
       $queue.forEach((value: ISong) => {
         console.log(value)
       })
-
+      //@ts-ignore 2345
       lib.set(await window.electron.getLib(dir))
       current.set($queue[0])
       page.set(Pages.Player)
+      visQueue = $queue.slice(0, 25)
     } catch (e) {
       console.error(e)
     }
@@ -116,11 +141,11 @@
         {/if}
       {:else}
         <div class="flex space-x-5 h-full flex-row w-screen">
-          <div class="w-96">
+          <div class="resize-x">
             <Navbar />
           </div>
           {#if $page === Pages.Player}
-            <div class="flex flex-col h-full w-full flex-1">
+            <div class="flex-col grow flex pb-3 justify-between h-full w-full">
               <Player />
               <div class="overflow-x-auto shrink overflow-y-auto">
                 <table class="table table-pin-rows">
@@ -135,16 +160,16 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {#each $queue as song}
-                      <Row {song} />
+                    {#each visQueue as song, i}
+                      <Row {song} {i} vis={visQueue.length} />
                     {/each}
                   </tbody>
                 </table>
               </div>
             </div>
           {:else if $page === Pages.Lyrics}
-            <div class="flex-col flex justify-between h-full w-full">
-              <div class="justify-center align-middle overflow-y-auto flex flex-col">
+            <div class="flex-col grow flex justify-between pt-3 h-full w-full">
+              <div class="justify-center h-full align-middle overflow-y-auto flex flex-col">
                 {#await getLyrics($current.path) then lrc}
                   <LyricDisplay {lrc} />
                 {:catch _err}
@@ -200,8 +225,8 @@
               </div>
             </div>
           {:else if $page === Pages.Library}
-            <div class="flex flex-col w-full top-3 h-screen justify-between">
-              <div class="justify-center shrink h-[90vh] overflow-y-scroll align-middle">
+            <div class="flex flex-col w-full top-3 grow h-screen justify-between">
+              <div class="justify-center shrink h-full overflow-y-scroll align-middle">
                 <Library library={$lib} />
               </div>
               <div class="w-full flex">
@@ -209,7 +234,7 @@
               </div>
             </div>
           {:else if $page === Pages.FileManager}
-            <div class="flex flex-col w-full top-3 h-screen justify-between">
+            <div class="flex grow flex-col w-full top-3 h-screen justify-between">
               <div class="justify-center shrink h-[90vh] overflow-y-auto align-middle">
                 <FileManager lib={$lib} />
               </div>
@@ -218,14 +243,14 @@
               </div>
             </div>
           {:else if $page === Pages.Editor}
-            <div class="flex flex-col w-full">
+            <div class="flex grow flex-col w-full">
               <div class="grow justify-center align-middle flex flex-col flex-1">
                 <button
                   class="btn"
                   on:click={() => {
                     //@ts-ignore 2345
                     window.electron.openBrowser(
-                      '"C:\\Program Files\\MusicBrainz Picard\\picard.exe"'
+                      'START "C:\\Program Files\\MusicBrainz Picard\\picard.exe"'
                     )
                   }}
                 >

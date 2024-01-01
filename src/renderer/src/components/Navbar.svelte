@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { page, Pages, theme } from "../utils/pages";
-  import settings from '../assets/settings.svg'
-  import heart from '../assets/heart.svg'
+  import { page, Pages, theme } from '../utils/pages'
   import Dialog from './Dialog.svelte'
-  import Icon from './Icon.svelte'
   import { version } from '../utils/info'
-  import { IconHeart, IconSettings } from "@tabler/icons-svelte";
+  import { IconAlertTriangle, IconAtom, IconHeart, IconSettings } from '@tabler/icons-svelte'
+
+  const env = window.info.process.env
+  const versions = window.info.process.versions
 
   let dialog
   let modalPage: number = 0
 </script>
 
-<ul class="menu flex flex-col space-y-3 bg-base-200 h-screen grow w-full rounded-box">
+<ul class="menu resize-x flex flex-col space-y-3 bg-base-200 h-screen grow w-full rounded-box">
   <div class="bg-blue-600 flex rounded-box w-auto align-middle justify-center h-[10%] m-3">
     <p>Mint Music Logo</p>
   </div>
@@ -63,7 +63,18 @@
     >
   </li>
   <div class="flex grow" />
-  <li class="w-full flex">
+  <li class="w-full flex space-y-3">
+    {#if env.NODE_ENV === 'development'}
+      <div
+        class="tooltip text-warning font-bold"
+        data-tip="Warning: You are using a development version of Mint Music. The app may be unstable and behave in unexpected ways. Features may be removed in final version."
+      >
+        <p class="h-full justify-left">
+          <IconAlertTriangle class="inline" />
+          <span class="h-full">WARNING: DEVELOPMENT ENVIRONMENT</span>
+        </p>
+      </div>
+    {/if}
     <button
       class="w-full flex grow"
       on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -76,7 +87,9 @@
       }}
     >
       <div class="flex-row grow space-x-3 justify-between flex">
-        <p class="flex h-full align-middle">Mint Music v{version.mint}</p>
+        <p class="flex h-full align-middle font-bold">
+          {env.NODE_ENV === 'development' ? 'DEV BUILD' : `Mint Music v${version.mint}`}
+        </p>
       </div>
       <IconSettings class="stroke-primary" />
     </button>
@@ -106,18 +119,19 @@
           </li>
           <div class="flex grow" />
           <li class="w-full flex flex-row">
-            <p class="flex w-full">
-              Made with <IconHeart class="stroke-primary" /> by MintyH and Contributors
-            </p>
+            <div class="flex w-full">
+              <span> Made with </span>
+              <IconHeart class="stroke-primary" />
+              <span>and designed with</span>
+              <IconAtom class="stroke-primary" />
+              <span> by MintyH and Contributors </span>
+            </div>
           </li>
         </ul>
       </div>
-      <div class="grow w-full space-y-5 flex flex-col">
+      <div class="w-3/5 space-y-5 flex flex-col">
         {#if modalPage === 0}
           <h1 class="text-6xl">About</h1>
-          <h2 class="text-3xl">Version Info</h2>
-          <p>Mint Music v{version.mint}</p>
-          <p>Node JS {version.node}</p>
           <h2 class="text-3xl">Copyright and License Declarations</h2>
           <p>&copy; {new Date().getFullYear()} MintyH and Contributors</p>
           <p>
@@ -142,7 +156,7 @@
           </p>
           <h2 class="text-3xl">Acknowledgements</h2>
           <button
-            class="underline text-left text-blue-500"
+            class="text-left link-info"
             on:click={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
             () => {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -150,6 +164,12 @@
               window.electron.openBrowser('https://lrclib.net')
             }}>Lyrics API by LRCLib.net</button
           >
+          <h2 class="text-3xl">Version Info</h2>
+          <p>{env.NODE_ENV === 'development' ? 'DEV BUILD' : `Mint Music v${version.mint}`}</p>
+          <p>Node JS v{versions.node}</p>
+          <p>Electron v{versions.electron}</p>
+          <p>V8 v{versions.v8}</p>
+          <p>Chromium v{versions.chrome}</p>
         {:else if modalPage === 1}
           <h1>Theme</h1>
           <select class="select border-primary" bind:value={$theme}>

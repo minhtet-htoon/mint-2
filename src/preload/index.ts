@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { electronAPI } from '@electron-toolkit/preload'
 
 contextBridge.exposeInMainWorld('electron', {
   openFile: () => ipcRenderer.invoke('dialog:openFile'),
@@ -14,3 +15,4 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.invoke('rpc', album, song, artist),
   libAdd: (lib: string, offset?: number) => ipcRenderer.invoke('dialog:add', lib, offset)
 })
+contextBridge.exposeInMainWorld('info', electronAPI)

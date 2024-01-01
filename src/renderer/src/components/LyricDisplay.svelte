@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { linesAfter, linesBefore, lyrFromTime } from "../utils/lrc";
+  import { linesAfter, linesBefore, lyrFromTime } from '../utils/lrc'
   import { Progress } from '../utils/player'
   import type { ILyric } from '../../../types'
 
